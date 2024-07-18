@@ -44,3 +44,13 @@ In this example, we find the transform `T_world_base` by least-squares fitting t
 In this example, we perform a hand-eye calibration using the Python wrapper of GTSAM on the flat dataset to determine the position of the prism relative to the end effector of the manipulator `t_ee_prism`. Then, similarly to before, we perform a least-squares fit of `T_world_base` using the stationing points, this time using GTSAM. As before, we estimate the prism position for all evaluation points and compare it against the actual total station measurements.
 
 ---
+
+## Measurement Standard Deviations
+
+We used the following standard deviations for our measurements (all derived from the respective datasheets)
+
+| Sensor                             | Standard Deviation                         | Unit    |
+|------------------------------------|--------------------------------------------|---------|
+| Total Station Position Measurement | [0.75e-3, 0.75e-3, 0.75e-3]                | [m]     |
+| Total Station Gravity Alignment    | [4.848e-5, 4.848e-5]             | [rad]   |
+| Accelerometers                     | [4.3610059e-4, 4.3610059e-4, 4.3610059e-4] | [m/s^2] |
