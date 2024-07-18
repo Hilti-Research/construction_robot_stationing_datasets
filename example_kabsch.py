@@ -1,5 +1,5 @@
 from include.measurement import read_dataset_from_yaml, StationingShape
-from urdfpy import URDF
+import kinpy as kp
 import numpy as np
 from include.kabsch import kabsch
 from matplotlib import pyplot as plt
@@ -10,7 +10,7 @@ URDF_PATH = "data/trailblazer.urdf"
 
 if __name__ == "__main__":
     # Load URDF
-    robot = URDF.load(URDF_PATH)
+    robot = kp.build_chain_from_urdf(open(URDF_PATH).read())
 
     # Read in stations
     stations, _ = read_dataset_from_yaml(MEASUREMENT_PATH, StationingShape.CROSS)
@@ -29,8 +29,8 @@ if __name__ == "__main__":
             joint_config = {joint_name: measurement.joint_states[i] for i, joint_name in enumerate(measurement.joint_names)}
 
             # Perform forward kinematics
-            fk = robot.link_fk(cfg=joint_config)
-            sp__t_base_prism.append(fk[robot.link_map["prism"]][0:3, 3])
+            fk_res = robot.forward_kinematics(joint_config)
+            sp__t_base_prism.append(fk_res["prism"].matrix()[0:3, 3])
         sp__t_base_prism = np.array(sp__t_base_prism)
 
         # Perform Kabsch Least-squares stationing
@@ -41,8 +41,8 @@ if __name__ == "__main__":
         for measurement in station.evaluation_measurements:
             # Calculate predicted prism position in robot base frame
             joint_config = {joint_name: measurement.joint_states[i] for i, joint_name in enumerate(measurement.joint_names)}
-            fk = robot.link_fk(cfg=joint_config)
-            t_base_prism = fk[robot.link_map["prism"]][0:3, 3]
+            fk_res = robot.forward_kinematics(joint_config)
+            t_base_prism = fk_res["prism"].matrix()[0:3, 3]
 
             # Calculate predicted prism position in total station frame
             est_t_plt_prism = R_plt_base @ t_base_prism + t_plt_base

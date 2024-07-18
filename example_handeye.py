@@ -1,6 +1,6 @@
 import gtsam.noiseModel
 from include.measurement import read_dataset_from_yaml, StationingShape
-from urdfpy import URDF
+import kinpy as kp
 import numpy as np
 import gtsam
 from functools import partial
@@ -60,7 +60,7 @@ def hand_eye_position_factor(measurement, T_base_ee, idx_T_world_base, idx_t_ee_
 
 if __name__ == "__main__":
     # Load URDF
-    robot = URDF.load(URDF_PATH)
+    robot = kp.build_chain_from_urdf(open(URDF_PATH).read())
 
     # Read in datasets
     _, calibration_measurements = read_dataset_from_yaml(
@@ -78,9 +78,9 @@ if __name__ == "__main__":
     # Initial estimate
     initial_estimate = gtsam.Values()
     initial_estimate.insert(T_world_base_key, gtsam.Pose3())
-    fk = robot.link_fk()
-    T_root_ee = fk[robot.link_map["dsr_link6"]]
-    T_root_prism = fk[robot.link_map["prism"]]
+    fk_res = robot.forward_kinematics({})
+    T_root_ee = fk_res["dsr_link6"].matrix()
+    T_root_prism = fk_res["prism"].matrix()
     T_ee_prism = np.linalg.inv(T_root_ee) @ T_root_prism
     t_ee_prism_init = gtsam.Point3(T_ee_prism[0:3, 3])
     initial_estimate.insert(t_ee_prism_key, t_ee_prism_init)
@@ -98,8 +98,8 @@ if __name__ == "__main__":
         # Forward kinematics for T_base_ee
         joint_config = {joint_name: measurement.joint_states[i] for i, joint_name in enumerate(
             measurement.joint_names)}
-        fk = robot.link_fk(cfg=joint_config)
-        T_base_ee = fk[robot.link_map["dsr_link6"]]
+        fk_res = robot.forward_kinematics(joint_config)
+        T_base_ee = fk_res["dsr_link6"].matrix()
 
         gf = gtsam.CustomFactor(position_noise, [T_world_base_key, t_ee_prism_key], partial(
             hand_eye_position_factor, measurement.t_plt_prism, gtsam.Pose3(T_base_ee), 0, 1))
@@ -140,8 +140,8 @@ if __name__ == "__main__":
             # Forward kinematics for T_base_ee
             joint_config = {joint_name: measurement.joint_states[i] for i, joint_name in enumerate(
                 measurement.joint_names)}
-            fk = robot.link_fk(cfg=joint_config)
-            T_base_ee = fk[robot.link_map["dsr_link6"]]
+            fk_res = robot.forward_kinematics(joint_config)
+            T_base_ee = fk_res["dsr_link6"].matrix()
 
             gf = gtsam.CustomFactor(position_noise, [T_world_base_key, t_ee_prism_key], partial(
                 hand_eye_position_factor, measurement.t_plt_prism, gtsam.Pose3(T_base_ee), 0, 1))
@@ -161,8 +161,8 @@ if __name__ == "__main__":
             # Forward kinematics for T_base_ee
             joint_config = {joint_name: evaluation_measurement.joint_states[i] for i, joint_name in enumerate(
                 evaluation_measurement.joint_names)}
-            fk = robot.link_fk(cfg=joint_config)
-            T_base_ee = fk[robot.link_map["dsr_link6"]]
+            fk_res = robot.forward_kinematics(joint_config)
+            T_base_ee = fk_res["dsr_link6"].matrix()
 
             # Calculate predicted prism position in total station frame
             T_world_ee = T_world_base_est * gtsam.Pose3(T_base_ee)
