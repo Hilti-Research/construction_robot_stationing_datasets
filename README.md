@@ -33,7 +33,7 @@ The following table summarizes the individual datasets provided. Unless otherwis
 
 ## Examples
 
-We provide two examples of how to use the datasets.
+We provide two examples of how to use the datasets. The file `requirements.txt` contains the python dependencies for `example_kabsch.py`. For running `example_handeye.py`, you additionally need GTSAM with the python bindings installed. 
 
 ### example_kabsch.py
 
