@@ -31,6 +31,7 @@ The following table summarizes the individual datasets provided. Unless otherwis
 | diagonal_wood.yaml   | Wooden slab under tracks, oriented diagonally, tilting the robot backward and to the left.                  |
 | outdoor.yaml         | Captured outdoors at 9°C, contrasting with the 21°C of other datasets. Flat floor.                          |
 
+
 ## Examples
 
 We provide two examples of how to use the datasets. The file `requirements.txt` contains the python dependencies for `example_kabsch.py`. For running `example_handeye.py`, you additionally need GTSAM with the python bindings installed. 
@@ -43,10 +44,33 @@ In this example, we find the transform `T_world_base` by least-squares fitting t
 
 In this example, we perform a hand-eye calibration using the Python wrapper of GTSAM on the flat dataset to determine the position of the prism relative to the end effector of the manipulator `t_ee_prism`. Then, similarly to before, we perform a least-squares fit of `T_world_base` using the stationing points, this time using GTSAM. As before, we estimate the prism position for all evaluation points and compare it against the actual total station measurements.
 
----
+## Robot Overview
+![Trailblazer](data/images/robot_overview.jpg)
 
-## Measurement Standard Deviations
+### Hardware Specifications
 
+* Robot: Hilti JaiBot Prototype
+* Accelerometers: Analog Devices ADXL355. The scalings of the accelerometers were calibrated on a goniometer
+* Total Station: Hilti PLT 300
+
+
+### Accelerometer Placement
+The accelerometers, denoted as `tilt_sensor_<LOCATION>` in the URDF, are strategically placed on the rigid base and at the tip of the lifting column.
+
+### Column Mechanics
+The lifting column consists of two segments, both actuated by a single motor, ensuring that both segments extend simultaneously by the same amount. The resulting overlaps of the segments are calculated as follows:
+
+        l1 = 1.448 - joint_state__column_middle_joint
+        l2 = 1.414 - joint_state__column_top_joint
+
+Here, `joint_state__column_middle_joint` and `joint_state__column_top_joint` represent the states of the respective joints. In the URDF, these joints are mimic joints, mimicking the `column_prismatic_joint` as observed in the datasets.
+
+Including the mimic joint in the formulas, the resulting overlaps are:
+
+        l1 = 1.448 - (0.5 * joint_state__column_prismatic_joint - 0.706)
+        l2 = 1.414 - (0.5 * joint_state__column_prismatic_joint - 0.736)
+
+### Measurement Standard Deviations
 We used the following standard deviations for our measurements (all derived from the respective datasheets)
 
 | Sensor                             | Standard Deviation                         | Unit    |
