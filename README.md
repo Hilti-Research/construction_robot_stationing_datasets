@@ -53,6 +53,13 @@ In this example, we perform a hand-eye calibration using the Python wrapper of G
 * Accelerometers: Analog Devices ADXL355. The scalings of the accelerometers were calibrated on a goniometer
 * Total Station: Hilti PLT 300
 
+### URDF file
+The file `data/trailblazer.urdf` captures the kinematic chain (from CAD) as well as the masses and inertias of the system. The TF tree looks as follows:
+
+![TF Tree](data/images/tf_tree.jpg)
+
+In the URDF and the datasets, we capture the joint state of the joint `column_prismatic_joint` which is the transform `column_base -> column_pseudo_tip`. The actual joints `column_middle_joint` (`column_base -> column_middle`) and `column_top_joint` (`column_middle -> column_top`) are set up as mimic joints. This is chosen this way such that we are able to describe both joints with a nicely interpretable virtual joint while still being able to use the URDF for deflection modeling with the actual joints in the kinematic chain.
+
 
 ### Accelerometer Placement
 The accelerometers, denoted as `tilt_sensor_<LOCATION>` in the URDF, are strategically placed on the rigid base and at the tip of the lifting column.
